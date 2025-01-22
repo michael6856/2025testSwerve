@@ -19,13 +19,15 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.units.Units;
 
 public class photonvision extends SubsystemBase {
 
-    public PhotonCamera camera = new PhotonCamera("limelight3");
+    public PhotonCamera camera = new PhotonCamera("cameraFR");
     private PhotonPipelineResult result;
     private PhotonTrackedTarget target;
 
@@ -39,21 +41,21 @@ public class photonvision extends SubsystemBase {
     public double YawToTarget;
     
     Rotation2d Yaw;
-    Transform3d cameraTorobot = new Transform3d(-0.1225, 0.0, 0.32, new Rotation3d(0, 22.5, 0));
+    Transform3d cameraTorobot = new Transform3d( -0.2667, 0.2667, 0.22, new Rotation3d(0, Math.toRadians(20), Math.toRadians(-35)));
     Transform3d robotTocamera = new Transform3d(new Translation3d(0.42, 0, 0.22), new Rotation3d(0, 0, 0));
     Pose3d robotPose;
 
-    NetworkTable table = NetworkTableInstance.getDefault().getTable("photonvision/limelight3");
+    NetworkTable table = NetworkTableInstance.getDefault().getTable("photonvision/cameraFR");
 
     // AprilTag Field Layout
     public photonvision(){
         try{
             aprilTagFieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
-            System.out.println("apriltagfield loadSuccess");
+            //System.out.println("apriltagfield loadSuccess");
 
         }catch (Exception error){
             aprilTagFieldLayout = null;
-            System.out.println("apriltagfield null");
+            //System.out.println("apriltagfield null");
         }
         SmartDashboard.putData("Field", m_Field2d);
     }
@@ -88,11 +90,11 @@ public class photonvision extends SubsystemBase {
             if(target.getFiducialId() != -1)
                 Yaw = PhotonUtils.getYawToPose(robotPose.toPose2d(), TagPose.get().toPose2d());
                 YawDegree = Yaw.getDegrees();
-                System.out.println("Yaw get");
+                //System.out.println("Yaw get");
                 hasYaw = true;
                 return Yaw;
         }
-        System.out.println("Yaw is null");
+        //System.out.println("Yaw is null");
         hasYaw = false;
         return Yaw = null;
     }
@@ -199,13 +201,20 @@ public class photonvision extends SubsystemBase {
     
     @Override
     public void periodic(){
+        //Pose2d pose2d;
         getRobotPose();
         getYawToPose();
         getYawToTarget();
         result = camera.getLatestResult();
         target = result.getBestTarget();
-        SmartDashboard.putData("Field", m_Field2d);
-        m_Field2d.setRobotPose(getRobotPose());
+        // Optional<EstimatedRobotPose> pose = getEstimatedGlobalPose(robotPose.toPose2d());
+        // if(!pose.isEmpty()){
+        //     pose2d = pose.get().estimatedPose.toPose2d();
+        //     m_Field2d.setRobotPose(pose2d);
+        // }
+        //m_Field2d.setRobotPose(robotPose.toPose2d());
+       // SmartDashboard.putData("Field", m_Field2d);
+        SmartDashboard.putNumber("test", getRobotPose().getX());
         SmartDashboard.putBoolean("hasTarget", hasTargets);
         SmartDashboard.putBoolean("hasYaw", hasYaw);
         SmartDashboard.putNumber("YawDegree", YawDegree);
